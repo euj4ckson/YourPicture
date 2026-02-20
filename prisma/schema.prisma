@@ -1,0 +1,129 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum PhotoStatus {
+  PUBLISHED
+  HIDDEN
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  CANCELED
+  EXPIRED
+}
+
+model Album {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  description String?
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  photos      Photo[]
+
+  @@index([isPublished])
+  @@index([createdAt])
+}
+
+model Photo {
+  id               String      @id @default(cuid())
+  slug             String      @unique
+  title            String
+  description      String?
+  tags             String[]    @default([])
+  priceCents       Int
+  status           PhotoStatus @default(PUBLISHED)
+  albumId          String?
+  album            Album?      @relation(fields: [albumId], references: [id], onDelete: SetNull)
+  previewUrl       String
+  previewWidth     Int?
+  previewHeight    Int?
+  originalPublicId String
+  originalFormat   String
+  originalBytes    Int?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  orders           Order[]
+
+  @@index([status, createdAt])
+  @@index([albumId])
+}
+
+model Customer {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  whatsapp  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  orders    Order[]
+}
+
+model Order {
+  id                    String                @id @default(cuid())
+  photoId               String
+  photo                 Photo                 @relation(fields: [photoId], references: [id], onDelete: Restrict)
+  customerId            String
+  customer              Customer              @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  status                OrderStatus           @default(PENDING)
+  amountCents           Int
+  provider              String
+  providerChargeId      String?
+  providerCorrelationId String?               @unique
+  providerRaw           Json?
+  paidAt                DateTime?
+  canceledAt            DateTime?
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+  downloadTokens        DownloadToken[]
+  webhookEvents         PaymentWebhookEvent[]
+
+  @@index([status, createdAt])
+  @@index([providerChargeId])
+}
+
+model DownloadToken {
+  id                 String    @id @default(cuid())
+  orderId            String
+  order              Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  token              String    @unique
+  expiresAt          DateTime
+  remainingDownloads Int       @default(5)
+  createdAt          DateTime  @default(now())
+  lastUsedAt         DateTime?
+
+  @@index([orderId])
+  @@index([expiresAt])
+}
+
+model PaymentWebhookEvent {
+  id              String   @id @default(cuid())
+  orderId         String?
+  order           Order?   @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  provider        String
+  eventType       String
+  providerEventId String   @unique
+  payload         Json
+  processedAt     DateTime @default(now())
+
+  @@index([provider, processedAt])
+}
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  subject   String?
+  message   String
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
