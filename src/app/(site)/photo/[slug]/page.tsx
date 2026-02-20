@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import { notFound } from "next/navigation";
 
 import { BuyPhotoDialog } from "@/components/checkout/buy-photo-dialog";
+import { GalleryImage } from "@/components/gallery/gallery-image";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -25,13 +25,13 @@ export async function generateMetadata({
 
   if (!photo) {
     return {
-      title: "Foto não encontrada",
+      title: "Foto nao encontrada",
     };
   }
 
   return {
     title: photo.title,
-    description: photo.description || `Prévia com marca d'água de ${photo.title}.`,
+    description: photo.description || `Previa com marca d'agua de ${photo.title}.`,
     openGraph: {
       images: [photo.previewUrl],
     },
@@ -55,25 +55,25 @@ export default async function PhotoPage({
   }
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[1.5fr_1fr]">
+    <div className="grid gap-8 lg:grid-cols-[1.4fr_1fr]">
       <section className="space-y-4">
-        <div className="brand-frame overflow-hidden rounded-2xl border border-border/70 bg-card/30">
-          <Image
+        <div className="brand-frame overflow-hidden rounded-3xl border border-border/70 bg-card/30">
+          <GalleryImage
             src={photo.previewUrl}
-            alt={`Prévia com marca d'água: ${photo.title}`}
+            alt={`Previa com marca d'agua: ${photo.title}`}
             width={photo.previewWidth || 1600}
             height={photo.previewHeight || 1000}
             className="h-auto w-full object-cover"
             priority
           />
         </div>
-        <p className="text-sm text-muted-foreground">
-          Esta é uma prévia com marca d&apos;água. O arquivo original só é liberado após confirmação de
+        <p className="rounded-xl border border-border/70 bg-card/40 p-3 text-sm text-muted-foreground">
+          Esta e uma previa com marca d&apos;agua. O arquivo original so e liberado apos confirmacao do
           pagamento.
         </p>
       </section>
 
-      <aside className="space-y-5">
+      <aside className="space-y-5 lg:sticky lg:top-24 lg:self-start">
         <Card className="border-border/70 bg-card/40">
           <CardContent className="space-y-4 p-6">
             <div className="space-y-2">
@@ -84,11 +84,11 @@ export default async function PhotoPage({
             <Separator />
             <div className="space-y-2 text-sm">
               <p>
-                <span className="text-muted-foreground">Preço:</span>{" "}
+                <span className="text-muted-foreground">Preco:</span>{" "}
                 <strong>{formatCurrency(photo.priceCents)}</strong>
               </p>
               <p>
-                <span className="text-muted-foreground">Álbum:</span> {photo.album?.title || "Sem álbum"}
+                <span className="text-muted-foreground">Album:</span> {photo.album?.title || "Sem album"}
               </p>
               <div className="flex flex-wrap gap-2 pt-1">
                 {photo.tags.map((tag) => (

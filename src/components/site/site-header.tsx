@@ -21,16 +21,17 @@ function NavItems({ mobile = false }: { mobile?: boolean }) {
   const pathname = usePathname();
 
   return (
-    <nav className={cn("flex items-center gap-6", mobile && "flex-col items-start gap-3")}>
+    <nav className={cn("flex items-center gap-2", mobile && "flex-col items-start gap-3")}>
       {navLinks.map((item) => {
         const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+
         return (
           <Link
             key={item.href}
             href={item.href}
             className={cn(
-              "text-sm tracking-wide text-muted-foreground transition-colors hover:text-foreground",
-              active && "text-foreground",
+              "rounded-full px-3 py-2 text-sm tracking-wide text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground",
+              active && "bg-primary/15 text-foreground",
             )}
           >
             {item.label}
@@ -43,16 +44,16 @@ function NavItems({ mobile = false }: { mobile?: boolean }) {
 
 export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-40 border-b border-border/50 bg-background/80 backdrop-blur-md">
+    <header className="sticky top-0 z-40 border-b border-border/60 bg-background/75 backdrop-blur-xl">
       <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 md:px-6">
         <Link href="/" className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full border text-sm font-bold">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full border border-primary/35 bg-card text-sm font-bold">
             {siteConfig.brand.logoText}
           </div>
           <span className="font-serif text-lg tracking-wide">{siteConfig.brand.name}</span>
         </Link>
 
-        <div className="hidden items-center gap-8 md:flex">
+        <div className="hidden items-center gap-5 md:flex">
           <NavItems />
           <ThemeToggle />
         </div>
@@ -66,10 +67,10 @@ export function SiteHeader() {
                 <span className="sr-only">Menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="right">
+            <SheetContent side="right" className="w-[320px]">
               <SheetHeader>
                 <SheetTitle>{siteConfig.brand.name}</SheetTitle>
-                <SheetDescription>Navegação principal</SheetDescription>
+                <SheetDescription>Navegacao principal</SheetDescription>
               </SheetHeader>
               <div className="mt-6">
                 <NavItems mobile />

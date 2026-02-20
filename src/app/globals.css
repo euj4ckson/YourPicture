@@ -82,8 +82,13 @@
   body {
     @apply bg-background font-sans text-foreground;
     background-image:
-      radial-gradient(circle at 20% 15%, color-mix(in oklab, var(--primary) 18%, transparent), transparent 34%),
-      radial-gradient(circle at 80% 5%, color-mix(in oklab, var(--foreground) 12%, transparent), transparent 32%);
+      radial-gradient(circle at 14% 10%, color-mix(in oklab, var(--primary) 21%, transparent), transparent 36%),
+      radial-gradient(circle at 83% 4%, color-mix(in oklab, var(--foreground) 14%, transparent), transparent 36%),
+      linear-gradient(
+        120deg,
+        color-mix(in oklab, var(--background) 92%, transparent),
+        color-mix(in oklab, var(--background) 98%, transparent)
+      );
     background-attachment: fixed;
   }
 
@@ -99,6 +104,26 @@
 }
 
 @layer utilities {
+  @keyframes reveal-up {
+    0% {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .reveal-up {
+    animation: reveal-up 0.7s ease-out both;
+  }
+
+  .reveal-up-delay {
+    animation: reveal-up 0.9s ease-out both;
+    animation-delay: 0.12s;
+  }
+
   .brand-frame {
     position: relative;
     overflow: hidden;

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" fill="none">
+  <rect width="1600" height="1000" fill="#10131A"/>
+  <circle cx="280" cy="220" r="180" fill="#1D2430"/>
+  <circle cx="1320" cy="850" r="210" fill="#1A202B"/>
+  <rect x="140" y="120" width="1320" height="760" rx="26" stroke="#2C3544" stroke-width="2"/>
+  <path d="M220 740L560 430L820 650L980 520L1320 820H220V740Z" fill="#1E2734"/>
+  <path d="M220 820L480 560L700 760L900 610L1120 820H220Z" fill="#253042"/>
+  <circle cx="1130" cy="300" r="70" fill="#3A475D"/>
+  <text x="800" y="190" fill="#E6ECF5" text-anchor="middle" font-family="Arial, sans-serif" font-size="54" letter-spacing="2">PREVIEW INDISPONIVEL</text>
+  <text x="800" y="250" fill="#8D9AB0" text-anchor="middle" font-family="Arial, sans-serif" font-size="28">verifique URL ou upload da imagem</text>
+</svg>

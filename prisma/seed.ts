@@ -12,7 +12,7 @@ async function main() {
     data: {
       title: "Colecao Editorial",
       slug: "colecao-editorial",
-      description: "Fotos de demonstração para ambiente local.",
+      description: "Fotos de demonstracao para ambiente local.",
       isPublished: true,
     },
   });
@@ -28,7 +28,7 @@ async function main() {
         status: PhotoStatus.PUBLISHED,
         albumId: album.id,
         previewUrl:
-          "https://placehold.co/1600x1000/171717/e5e5e5?text=Preview+com+Watermark",
+          "https://placehold.co/1600x1000/171717/e5e5e5.jpg?text=Preview+com+Watermark",
         previewWidth: 1600,
         previewHeight: 1000,
         originalPublicId: "demo/original/luz-de-estudio",
@@ -44,7 +44,7 @@ async function main() {
         status: PhotoStatus.PUBLISHED,
         albumId: album.id,
         previewUrl:
-          "https://placehold.co/1600x1100/101010/f5f5f5?text=Preview+com+Watermark",
+          "https://placehold.co/1600x1100/101010/f5f5f5.jpg?text=Preview+com+Watermark",
         previewWidth: 1600,
         previewHeight: 1100,
         originalPublicId: "demo/original/retrato-urbano",

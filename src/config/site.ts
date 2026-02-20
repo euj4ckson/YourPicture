@@ -1,15 +1,15 @@
 export const siteConfig = {
   brand: {
-    name: "Seu Nome Fotografia",
-    logoText: "SN",
+    name: "Fotografia Premium",
+    logoText: "FT",
     tagline: "Imagem autoral para marcas e pessoas.",
     description:
       "Portfólio premium com venda de fotos digitais em alta resolução.",
   },
   links: {
-    instagram: "https://instagram.com/seuusuario",
-    whatsapp: "https://wa.me/5500000000000",
-    email: "contato@seudominio.com",
+    instagram: "https://instagram.com/euj4ckson",
+    whatsapp: "https://wa.me/5532988518799",
+    email: "jacksonduardo6@gmail.com",
   },
   about:
     "Fotógrafo(a) especializado(a) em retratos, campanhas e editoriais. Este texto pode ser alterado livremente para contar sua história.",
