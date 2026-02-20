@@ -29,7 +29,7 @@ export default function ContactPage() {
           <p>
             WhatsApp:{" "}
             <Link href={siteConfig.links.whatsapp} target="_blank" className="underline">
-              {siteConfig.links.whatsapp}
+              {siteConfig.links.whatsappNumber}
             </Link>
           </p>
           <p>

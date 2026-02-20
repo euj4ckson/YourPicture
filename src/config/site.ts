@@ -9,6 +9,7 @@ export const siteConfig = {
   links: {
     instagram: "https://instagram.com/euj4ckson",
     whatsapp: "https://wa.me/5532988518799",
+    whatsappNumber: "+5532988518799",
     email: "jacksonduardo6@gmail.com",
   },
   about:
