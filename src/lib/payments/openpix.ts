@@ -49,6 +49,28 @@ function asRecord(value: unknown): Record<string, unknown> {
   return {};
 }
 
+function normalizeCustomerPhone(raw?: string) {
+  if (!raw) {
+    return undefined;
+  }
+
+  const digits = raw.replace(/\D/g, "");
+
+  if (!digits) {
+    return undefined;
+  }
+
+  if (digits.length === 10 || digits.length === 11) {
+    return `+55${digits}`;
+  }
+
+  if (digits.length === 12 || digits.length === 13) {
+    return `+${digits}`;
+  }
+
+  return undefined;
+}
+
 function parseOneEvent(eventPayload: unknown): ParsedPaymentEvent | null {
   const root = asRecord(eventPayload);
   const charge = asRecord(root.charge ?? root);
@@ -97,6 +119,13 @@ export class OpenPixProvider implements PaymentProvider {
       throw new Error("OPENPIX_APP_ID nao configurado.");
     }
 
+    const customerPhone = normalizeCustomerPhone(input.customerWhatsapp);
+    const customerPayload = {
+      name: input.customerName,
+      email: input.customerEmail,
+      ...(customerPhone ? { phone: customerPhone } : {}),
+    };
+
     const response = await fetch(`${env.OPENPIX_BASE_URL}/api/v1/charge`, {
       method: "POST",
       headers: {
@@ -107,23 +136,25 @@ export class OpenPixProvider implements PaymentProvider {
         correlationID: input.orderId,
         value: input.amountCents,
         comment: input.description,
-        customer: {
-          name: input.customerName,
-          email: input.customerEmail,
-          phone: input.customerWhatsapp || undefined,
-        },
+        customer: customerPayload,
         expiresIn: input.expiresInSeconds,
       }),
       cache: "no-store",
     });
 
     const rawText = await response.text();
-    const rawJson = rawText ? JSON.parse(rawText) : {};
+    let rawJson: unknown = {};
+
+    if (rawText) {
+      try {
+        rawJson = JSON.parse(rawText);
+      } catch {
+        rawJson = { rawText };
+      }
+    }
 
     if (!response.ok) {
-      throw new Error(
-        `Falha ao criar cobranca OpenPix (${response.status}): ${JSON.stringify(rawJson)}`,
-      );
+      throw new Error(`OPENPIX_HTTP_${response.status}:${JSON.stringify(rawJson)}`);
     }
 
     const parsed = chargeResponseSchema.parse(rawJson);

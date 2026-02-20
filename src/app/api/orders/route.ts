@@ -1,11 +1,11 @@
 import { OrderStatus, PhotoStatus, Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 
-import { buildDownloadApiUrl, sendDownloadReadyEmail } from "@/lib/email";
 import { siteConfig } from "@/config/site";
+import { buildDownloadApiUrl, sendDownloadReadyEmail } from "@/lib/email";
 import { env } from "@/lib/env";
-import { getPaymentProvider } from "@/lib/payments";
 import { markOrderPaid } from "@/lib/order-service";
+import { getPaymentProvider } from "@/lib/payments";
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rate-limit";
 import { createOrderSchema } from "@/lib/validation";
@@ -17,7 +17,67 @@ function getClientIp(request: Request) {
   return forwarded?.split(",")[0]?.trim() || "unknown";
 }
 
+function mapOrderCreationError(error: unknown) {
+  if (!(error instanceof Error)) {
+    return {
+      status: 500,
+      message: "Nao foi possivel criar o pedido no momento.",
+    };
+  }
+
+  const message = error.message;
+
+  if (message.includes("OPENPIX_APP_ID nao configurado")) {
+    return {
+      status: 503,
+      message: "Pix indisponivel: configure OPENPIX_APP_ID no servidor.",
+    };
+  }
+
+  if (message.includes("ainda nao foi implementado")) {
+    return {
+      status: 503,
+      message: "Provedor de pagamento ainda nao implementado.",
+    };
+  }
+
+  if (message.includes("OPENPIX_HTTP_401") || message.includes("OPENPIX_HTTP_403")) {
+    return {
+      status: 502,
+      message: "Falha de autenticacao com OpenPix. Verifique OPENPIX_APP_ID.",
+    };
+  }
+
+  if (message.includes("OPENPIX_HTTP_400") || message.includes("OPENPIX_HTTP_422")) {
+    return {
+      status: 400,
+      message: "Dados invalidos para gerar Pix. Confira nome, e-mail e WhatsApp.",
+    };
+  }
+
+  if (message.includes("OPENPIX_HTTP_")) {
+    return {
+      status: 502,
+      message: "Servico Pix indisponivel no momento. Tente novamente em instantes.",
+    };
+  }
+
+  if (message.toLowerCase().includes("fetch failed")) {
+    return {
+      status: 502,
+      message: "Falha de comunicacao com o provedor Pix. Tente novamente.",
+    };
+  }
+
+  return {
+    status: 500,
+    message: "Nao foi possivel criar o pedido no momento.",
+  };
+}
+
 export async function POST(request: Request) {
+  let createdOrderId: string | null = null;
+
   try {
     const ip = getClientIp(request);
     const limitResult = rateLimit({
@@ -38,7 +98,7 @@ export async function POST(request: Request) {
 
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "Dados inválidos.", details: parsed.error.flatten() },
+        { error: "Dados invalidos.", details: parsed.error.flatten() },
         { status: 400 },
       );
     }
@@ -48,7 +108,7 @@ export async function POST(request: Request) {
     });
 
     if (!photo) {
-      return NextResponse.json({ error: "Foto não encontrada." }, { status: 404 });
+      return NextResponse.json({ error: "Foto nao encontrada." }, { status: 404 });
     }
 
     const customer = await prisma.customer.upsert({
@@ -73,17 +133,34 @@ export async function POST(request: Request) {
         provider: env.PAYMENT_PROVIDER,
       },
     });
+    createdOrderId = order.id;
 
     const provider = getPaymentProvider();
-    const charge = await provider.createCharge({
-      orderId: order.id,
-      amountCents: photo.priceCents,
-      customerName: customer.name,
-      customerEmail: customer.email,
-      customerWhatsapp: customer.whatsapp || undefined,
-      description: `Compra da foto "${photo.title}"`,
-      expiresInSeconds: siteConfig.commerce.pixExpiresMinutes * 60,
-    });
+    let charge: Awaited<ReturnType<typeof provider.createCharge>>;
+
+    try {
+      charge = await provider.createCharge({
+        orderId: order.id,
+        amountCents: photo.priceCents,
+        customerName: customer.name,
+        customerEmail: customer.email,
+        customerWhatsapp: customer.whatsapp || undefined,
+        description: `Compra da foto "${photo.title}"`,
+        expiresInSeconds: siteConfig.commerce.pixExpiresMinutes * 60,
+      });
+    } catch (providerError) {
+      await prisma.order.update({
+        where: { id: order.id },
+        data: {
+          status: OrderStatus.CANCELED,
+          providerRaw: {
+            providerError: providerError instanceof Error ? providerError.message : "unknown",
+          } as Prisma.InputJsonValue,
+        },
+      });
+
+      throw providerError;
+    }
 
     const updatedOrder = await prisma.order.update({
       where: { id: order.id },
@@ -116,10 +193,26 @@ export async function POST(request: Request) {
       expiresAt: charge.expiresAt,
     });
   } catch (error) {
-    console.error("[POST /api/orders]", error);
+    const mapped = mapOrderCreationError(error);
+
+    if (createdOrderId) {
+      console.error("[POST /api/orders]", {
+        orderId: createdOrderId,
+        message: error instanceof Error ? error.message : String(error),
+      });
+    } else {
+      console.error("[POST /api/orders]", error);
+    }
+
+    const debug =
+      env.NODE_ENV === "production" || !(error instanceof Error) ? undefined : error.message;
+
     return NextResponse.json(
-      { error: "Não foi possível criar o pedido no momento." },
-      { status: 500 },
+      {
+        error: mapped.message,
+        ...(debug ? { debug } : {}),
+      },
+      { status: mapped.status },
     );
   }
 }

@@ -13,6 +13,13 @@ Portfólio de fotografia com venda de fotos digitais, checkout Pix e liberação
 - Resend (envio de e-mail com link de download)
 - Deploy recomendado: Vercel
 
+## Acessos rapidos
+
+- Banco de dados (Prisma Postgres): https://console.prisma.io
+- Banco de dados (Vercel Postgres, se usar): https://vercel.com/dashboard/stores
+- Banco de fotos (Cloudinary Media Library): https://console.cloudinary.com/console/c-dgafbrv3k/media_library
+- Cloudinary (config do projeto): https://console.cloudinary.com/console/c-dgafbrv3k/settings
+
 ## Funcionalidades implementadas
 
 - Site público:
