@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, ShieldCheck, Sparkles, Wallet } from "lucide-react";
+import { ArrowRight, LockKeyhole, ShieldCheck, Sparkles, Wallet } from "lucide-react";
 
 import { GalleryImage } from "@/components/gallery/gallery-image";
 import { PhotoCard } from "@/components/gallery/photo-card";
@@ -75,6 +75,12 @@ export default async function HomePage() {
               </Button>
               <Button asChild variant="outline" size="lg">
                 <Link href="/contact">Falar comigo</Link>
+              </Button>
+              <Button asChild variant="secondary" size="lg">
+                <Link href="/admin">
+                  Painel admin
+                  <LockKeyhole className="ml-2 h-4 w-4" />
+                </Link>
               </Button>
             </div>
             <div className="grid grid-cols-2 gap-3 pt-2 md:max-w-md">
