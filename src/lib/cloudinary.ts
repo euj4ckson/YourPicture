@@ -3,9 +3,32 @@ import { v2 as cloudinary, type UploadApiOptions, type UploadApiResponse } from 
 import { siteConfig } from "@/config/site";
 import { env } from "@/lib/env";
 
-const cloudName = env.CLOUDINARY_CLOUD_NAME;
-const apiKey = env.CLOUDINARY_API_KEY;
-const apiSecret = env.CLOUDINARY_API_SECRET;
+function parseCloudinaryUrl(url?: string) {
+  if (!url) {
+    return null;
+  }
+
+  try {
+    const normalizedUrl = url.trim().replace(/^['"]|['"]$/g, "");
+    const parsed = new URL(normalizedUrl);
+    if (parsed.protocol !== "cloudinary:") {
+      return null;
+    }
+
+    return {
+      cloudName: parsed.hostname,
+      apiKey: decodeURIComponent(parsed.username),
+      apiSecret: decodeURIComponent(parsed.password),
+    };
+  } catch {
+    return null;
+  }
+}
+
+const parsedFromUrl = parseCloudinaryUrl(env.CLOUDINARY_URL);
+const cloudName = (env.CLOUDINARY_CLOUD_NAME || parsedFromUrl?.cloudName || "").trim();
+const apiKey = (env.CLOUDINARY_API_KEY || parsedFromUrl?.apiKey || "").trim();
+const apiSecret = (env.CLOUDINARY_API_SECRET || parsedFromUrl?.apiSecret || "").trim();
 
 export function isCloudinaryConfigured() {
   return !!cloudName && !!apiKey && !!apiSecret;

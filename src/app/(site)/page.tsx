@@ -52,8 +52,7 @@ export default async function HomePage() {
     dbUnavailable = true;
   }
 
-  const heroA = featured[0];
-  const heroB = featured[1];
+  const heroImages = [featured[0], featured[1] ?? featured[0], featured[2] ?? featured[1] ?? featured[0]];
 
   return (
     <div className="space-y-16 md:space-y-20">
@@ -97,10 +96,10 @@ export default async function HomePage() {
 
           <div className="grid grid-cols-2 gap-3 reveal-up-delay">
             <div className="col-span-2 overflow-hidden rounded-2xl border border-border/70 bg-background/40">
-              {heroA ? (
+              {heroImages[0] ? (
                 <GalleryImage
-                  src={heroA.previewUrl}
-                  alt={heroA.title}
+                  src={heroImages[0].previewUrl}
+                  alt={heroImages[0].title}
                   width={1400}
                   height={900}
                   className="aspect-[16/9] w-full object-cover"
@@ -111,10 +110,10 @@ export default async function HomePage() {
               )}
             </div>
             <div className="overflow-hidden rounded-2xl border border-border/70 bg-background/40">
-              {heroB ? (
+              {heroImages[1] ? (
                 <GalleryImage
-                  src={heroB.previewUrl}
-                  alt={heroB.title}
+                  src={heroImages[1].previewUrl}
+                  alt={heroImages[1].title}
                   width={1000}
                   height={1200}
                   className="aspect-[4/5] w-full object-cover"
@@ -123,11 +122,18 @@ export default async function HomePage() {
                 <div className="aspect-[4/5] w-full bg-muted/50" />
               )}
             </div>
-            <div className="rounded-2xl border border-border/70 bg-background/60 p-4 text-sm text-muted-foreground">
-              <p className="mb-3 text-xs uppercase tracking-[0.25em]">Fluxo</p>
-              <p>1. Visualiza a previa</p>
-              <p>2. Paga via Pix</p>
-              <p>3. Baixa o original</p>
+            <div className="overflow-hidden rounded-2xl border border-border/70 bg-background/40">
+              {heroImages[2] ? (
+                <GalleryImage
+                  src={heroImages[2].previewUrl}
+                  alt={heroImages[2].title}
+                  width={1000}
+                  height={1200}
+                  className="aspect-[4/5] w-full object-cover"
+                />
+              ) : (
+                <div className="aspect-[4/5] w-full bg-muted/50" />
+              )}
             </div>
           </div>
         </div>

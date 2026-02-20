@@ -2,14 +2,27 @@ import bcrypt from "bcryptjs";
 
 import { env } from "@/lib/env";
 
+function normalizeSecretValue(value?: string | null) {
+  return (value || "").trim().replace(/^['"]|['"]$/g, "");
+}
+
 export function isAdminEmail(email?: string | null) {
-  return !!email && email.toLowerCase() === env.ADMIN_EMAIL.toLowerCase();
+  const normalizedInput = normalizeSecretValue(email).toLowerCase();
+  const normalizedAdmin = normalizeSecretValue(env.ADMIN_EMAIL).toLowerCase();
+
+  return !!normalizedInput && normalizedInput === normalizedAdmin;
 }
 
 export async function verifyAdminPassword(password: string) {
-  if (!env.ADMIN_PASSWORD_HASH) {
+  const normalizedPlainPassword = normalizeSecretValue(env.ADMIN_PASSWORD);
+  if (normalizedPlainPassword) {
+    return password === normalizedPlainPassword;
+  }
+
+  const normalizedHash = normalizeSecretValue(env.ADMIN_PASSWORD_HASH);
+  if (!normalizedHash) {
     return false;
   }
 
-  return bcrypt.compare(password, env.ADMIN_PASSWORD_HASH);
+  return bcrypt.compare(password, normalizedHash);
 }

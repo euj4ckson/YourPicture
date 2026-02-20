@@ -114,9 +114,11 @@ Principais variáveis:
 - `NEXTAUTH_URL`
 - `APP_URL`
 - `ADMIN_EMAIL`
+- `ADMIN_PASSWORD` (opcional, fallback simples)
 - `ADMIN_PASSWORD_HASH`
 - `RESEND_API_KEY`
 - `RESEND_FROM_EMAIL`
+- `CLOUDINARY_URL`
 - `CLOUDINARY_CLOUD_NAME`
 - `CLOUDINARY_API_KEY`
 - `CLOUDINARY_API_SECRET`
@@ -135,6 +137,7 @@ node -e "console.log(require('bcryptjs').hashSync('SuaSenhaForteAqui', 10))"
 ```
 
 Cole o resultado em `ADMIN_PASSWORD_HASH`.
+Se preferir simplicidade (menos seguro), pode usar `ADMIN_PASSWORD` em texto puro.
 
 ## Banco de dados (Prisma)
 
@@ -185,7 +188,7 @@ Admin em `http://localhost:3000/admin/login`.
 
 1. Criar conta Cloudinary.
 2. Pegar `cloud_name`, `api_key`, `api_secret`.
-3. Preencher variáveis no `.env`.
+3. Preencher `CLOUDINARY_URL` no `.env` (ou usar `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY` e `CLOUDINARY_API_SECRET` separadamente).
 4. No admin, enviar imagem original.
 5. O sistema salva:
    - preview público com watermark

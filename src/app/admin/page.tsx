@@ -29,7 +29,7 @@ export const dynamic = "force-dynamic";
 
 const errorMessages: Record<string, string> = {
   cloudinary_missing:
-    "Cloudinary nao configurado. Defina CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY e CLOUDINARY_API_SECRET nas env vars.",
+    "Cloudinary nao configurado. Defina CLOUDINARY_URL ou CLOUDINARY_CLOUD_NAME/CLOUDINARY_API_KEY/CLOUDINARY_API_SECRET nas env vars.",
   upload_failed:
     "Falha ao enviar imagem. Verifique as credenciais da Cloudinary e tente novamente.",
 };

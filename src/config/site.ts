@@ -1,6 +1,6 @@
 export const siteConfig = {
   brand: {
-    name: "Fotografia Premium",
+    name: "YourPicture",
     logoText: "FT",
     tagline: "Imagem autoral para marcas e pessoas.",
     description:
