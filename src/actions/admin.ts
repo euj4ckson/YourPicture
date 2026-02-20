@@ -2,10 +2,11 @@
 
 import { OrderStatus, PhotoStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 
 import { authOptions } from "@/lib/auth-options";
-import { uploadPhotoVariants } from "@/lib/cloudinary";
+import { isCloudinaryConfigured, uploadPhotoVariants } from "@/lib/cloudinary";
 import { buildDownloadApiUrl, sendDownloadReadyEmail } from "@/lib/email";
 import { ensureDownloadToken } from "@/lib/order-service";
 import { prisma } from "@/lib/prisma";
@@ -20,6 +21,10 @@ async function requireAdmin() {
 
 function parseBoolean(value: FormDataEntryValue | null) {
   return value === "true" || value === "on" || value === "1";
+}
+
+function redirectAdminError(code: string) {
+  redirect(`/admin?error=${code}`);
 }
 
 export async function upsertAlbumAction(formData: FormData) {
@@ -75,6 +80,10 @@ export async function deleteAlbumAction(formData: FormData) {
 export async function uploadPhotosAction(formData: FormData) {
   await requireAdmin();
 
+  if (!isCloudinaryConfigured()) {
+    redirectAdminError("cloudinary_missing");
+  }
+
   const files = formData.getAll("files").filter((entry): entry is File => entry instanceof File);
   const albumId = String(formData.get("albumId") || "").trim();
   const description = String(formData.get("description") || "").trim();
@@ -95,42 +104,48 @@ export async function uploadPhotosAction(formData: FormData) {
     .map((tag) => tag.trim().toLowerCase())
     .filter(Boolean);
 
-  for (const file of files) {
-    if (!file.type.startsWith("image/")) {
-      continue;
+  try {
+    for (const file of files) {
+      if (!file.type.startsWith("image/")) {
+        continue;
+      }
+
+      const baseName = file.name.replace(/\.[^.]+$/, "");
+      const title = baseName.replace(/[-_]/g, " ").trim();
+      const slugBase = slugify(title || "foto");
+      const slug = `${slugBase}-${Date.now().toString(36).slice(-6)}`;
+
+      const uploaded = await uploadPhotoVariants({
+        file,
+        filenameBase: slug,
+      });
+
+      await prisma.photo.create({
+        data: {
+          title,
+          slug,
+          description: description || null,
+          tags,
+          priceCents,
+          status,
+          albumId: albumId || null,
+          previewUrl: uploaded.previewUrl,
+          previewWidth: uploaded.previewWidth,
+          previewHeight: uploaded.previewHeight,
+          originalPublicId: uploaded.originalPublicId,
+          originalFormat: uploaded.originalFormat,
+          originalBytes: uploaded.originalBytes,
+        },
+      });
     }
-
-    const baseName = file.name.replace(/\.[^.]+$/, "");
-    const title = baseName.replace(/[-_]/g, " ").trim();
-    const slugBase = slugify(title || "foto");
-    const slug = `${slugBase}-${Date.now().toString(36).slice(-6)}`;
-
-    const uploaded = await uploadPhotoVariants({
-      file,
-      filenameBase: slug,
-    });
-
-    await prisma.photo.create({
-      data: {
-        title,
-        slug,
-        description: description || null,
-        tags,
-        priceCents,
-        status,
-        albumId: albumId || null,
-        previewUrl: uploaded.previewUrl,
-        previewWidth: uploaded.previewWidth,
-        previewHeight: uploaded.previewHeight,
-        originalPublicId: uploaded.originalPublicId,
-        originalFormat: uploaded.originalFormat,
-        originalBytes: uploaded.originalBytes,
-      },
-    });
+  } catch (error) {
+    console.error("[uploadPhotosAction]", error);
+    redirectAdminError("upload_failed");
   }
 
   revalidatePath("/admin");
   revalidatePath("/portfolio");
+  redirect("/admin?success=upload");
 }
 
 export async function updatePhotoAction(formData: FormData) {
